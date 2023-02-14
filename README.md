@@ -14,8 +14,9 @@ We will be creating at least
 -  a spherical VAE (for quantum circuits, etc)
 
 We will validate them using
-- MUSHRA
-- FAD
+- MUSHRA testing protocol with expert listeners for a subjective performance measure
+- visqol and si-snr expert listeners for a subjective performance measure
+- FAD?
 - ...
 - (waiting for the first models to be trained)
 
