@@ -17,9 +17,11 @@ We will validate them using
 - MUSHRA
 - FAD
 - ...
+- (waiting for the first models to be trained)
 
-
-
+We will be experimenting with different loss functions 
+- perceptual loss, etc
+- place loss functions into [auraloss](https://github.com/csteinmetz1/auraloss) and import it
 
 
 
