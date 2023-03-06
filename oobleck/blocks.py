@@ -1,5 +1,6 @@
-from typing import Callable, Optional, Type, Union
+from typing import Callable, Optional, Sequence, Type, Union
 
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -31,8 +32,8 @@ class DilatedConvolutionalUnit(FeedForwardModule):
     def __init__(
             self,
             hidden_dim: int,
-            kernel_size: int,
             dilation: int,
+            kernel_size: int,
             activation: ModuleFactory,
             normalization: Callable[[nn.Module],
                                     nn.Module] = lambda x: x) -> None:
@@ -98,3 +99,81 @@ class DownsamplingUnit(FeedForwardModule):
                     stride=stride,
                     padding=stride // 2,
                 )))
+
+
+class DilatedResidualWaveformEncoder(FeedForwardModule):
+
+    def __init__(
+        self,
+        capacity: int,
+        dilated_unit: Type[DilatedConvolutionalUnit],
+        downsampling_unit: Type[DownsamplingUnit],
+        ratios: Sequence[int],
+        dilations: Union[Sequence[int], Sequence[Sequence[int]]],
+        pre_network_conv: Type[nn.Conv1d],
+        post_network_conv: Type[nn.Conv1d],
+    ) -> None:
+        super().__init__()
+        channels = capacity * 2**np.arange(len(ratios) + 1)
+
+        dilations_list = self.normalize_dilations(dilations, ratios)
+
+        net = [pre_network_conv(out_channels=channels[0])]
+
+        for ratio, dilations, input_dim, output_dim in zip(
+                ratios, dilations_list, channels[:-1], channels[1:]):
+            for dilation in dilations:
+                net.append(Residual(dilated_unit(input_dim, dilation)))
+            net.append(downsampling_unit(input_dim, output_dim, ratio))
+
+        net.append(post_network_conv(in_channels=output_dim))
+
+        self.net = nn.Sequential(*net)
+
+    @staticmethod
+    def normalize_dilations(dilations: Union[Sequence[int],
+                                             Sequence[Sequence[int]]],
+                            ratios: Sequence[int]):
+        if isinstance(dilations[0], int):
+            dilations = [dilations for _ in ratios]
+        return dilations
+
+
+class DilatedResidualWaveformDecoder(FeedForwardModule):
+
+    def __init__(
+        self,
+        capacity: int,
+        dilated_unit: Type[DilatedConvolutionalUnit],
+        upsampling_unit: Type[UpsamplingUnit],
+        ratios: Sequence[int],
+        dilations: Union[Sequence[int], Sequence[Sequence[int]]],
+        pre_network_conv: Type[nn.Conv1d],
+        post_network_conv: Type[nn.Conv1d],
+    ) -> None:
+        super().__init__()
+        channels = capacity * 2**np.arange(len(ratios) + 1)
+        channels = channels[::-1]
+
+        dilations_list = self.normalize_dilations(dilations, ratios)
+        dilations_list = dilations_list[::-1]
+
+        net = [pre_network_conv(out_channels=channels[0])]
+
+        for ratio, dilations, input_dim, output_dim in zip(
+                ratios, dilations_list, channels[:-1], channels[1:]):
+            net.append(upsampling_unit(input_dim, output_dim, ratio))
+            for dilation in dilations:
+                net.append(Residual(dilated_unit(output_dim, dilation)))
+
+        net.append(post_network_conv(in_channels=output_dim))
+
+        self.net = nn.Sequential(*net)
+
+    @staticmethod
+    def normalize_dilations(dilations: Union[Sequence[int],
+                                             Sequence[Sequence[int]]],
+                            ratios: Sequence[int]):
+        if isinstance(dilations[0], int):
+            dilations = [dilations for _ in ratios]
+        return dilations
