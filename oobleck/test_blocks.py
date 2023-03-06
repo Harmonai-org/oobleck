@@ -1,7 +1,6 @@
 import itertools
 from typing import Callable, Sequence, Union
 
-import gin
 import numpy as np
 import pytest
 import torch
@@ -9,8 +8,6 @@ import torch.nn as nn
 from torch.nn import utils
 
 from oobleck import blocks
-
-gin.enter_interactive_mode()
 
 
 def identity(module):
