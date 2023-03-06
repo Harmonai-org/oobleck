@@ -104,21 +104,22 @@ class DownsamplingUnit(FeedForwardModule):
 class DilatedResidualWaveformEncoder(FeedForwardModule):
 
     def __init__(
-        self,
-        capacity: int,
-        dilated_unit: Type[DilatedConvolutionalUnit],
-        downsampling_unit: Type[DownsamplingUnit],
-        ratios: Sequence[int],
-        dilations: Union[Sequence[int], Sequence[Sequence[int]]],
-        pre_network_conv: Type[nn.Conv1d],
-        post_network_conv: Type[nn.Conv1d],
-    ) -> None:
+            self,
+            capacity: int,
+            dilated_unit: Type[DilatedConvolutionalUnit],
+            downsampling_unit: Type[DownsamplingUnit],
+            ratios: Sequence[int],
+            dilations: Union[Sequence[int], Sequence[Sequence[int]]],
+            pre_network_conv: Type[nn.Conv1d],
+            post_network_conv: Type[nn.Conv1d],
+            normalization: Callable[[nn.Module],
+                                    nn.Module] = lambda x: x) -> None:
         super().__init__()
         channels = capacity * 2**np.arange(len(ratios) + 1)
 
         dilations_list = self.normalize_dilations(dilations, ratios)
 
-        net = [pre_network_conv(out_channels=channels[0])]
+        net = [normalization(pre_network_conv(out_channels=channels[0]))]
 
         for ratio, dilations, input_dim, output_dim in zip(
                 ratios, dilations_list, channels[:-1], channels[1:]):
@@ -142,15 +143,16 @@ class DilatedResidualWaveformEncoder(FeedForwardModule):
 class DilatedResidualWaveformDecoder(FeedForwardModule):
 
     def __init__(
-        self,
-        capacity: int,
-        dilated_unit: Type[DilatedConvolutionalUnit],
-        upsampling_unit: Type[UpsamplingUnit],
-        ratios: Sequence[int],
-        dilations: Union[Sequence[int], Sequence[Sequence[int]]],
-        pre_network_conv: Type[nn.Conv1d],
-        post_network_conv: Type[nn.Conv1d],
-    ) -> None:
+            self,
+            capacity: int,
+            dilated_unit: Type[DilatedConvolutionalUnit],
+            upsampling_unit: Type[UpsamplingUnit],
+            ratios: Sequence[int],
+            dilations: Union[Sequence[int], Sequence[Sequence[int]]],
+            pre_network_conv: Type[nn.Conv1d],
+            post_network_conv: Type[nn.Conv1d],
+            normalization: Callable[[nn.Module],
+                                    nn.Module] = lambda x: x) -> None:
         super().__init__()
         channels = capacity * 2**np.arange(len(ratios) + 1)
         channels = channels[::-1]
@@ -166,7 +168,7 @@ class DilatedResidualWaveformDecoder(FeedForwardModule):
             for dilation in dilations:
                 net.append(Residual(dilated_unit(output_dim, dilation)))
 
-        net.append(post_network_conv(in_channels=output_dim))
+        net.append(normalization(post_network_conv(in_channels=output_dim)))
 
         self.net = nn.Sequential(*net)
 
