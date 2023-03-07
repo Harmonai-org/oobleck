@@ -1,0 +1,2 @@
+include oobleck/configs/**/*.gin
+include requirements.txt

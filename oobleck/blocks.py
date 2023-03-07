@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Sequence, Type, Union
+from typing import Callable, Sequence, Type, Union
 
 import numpy as np
 import torch
