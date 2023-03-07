@@ -23,13 +23,13 @@ models.AudioAutoEncoder:
 
 # encoder / decoder wrapper definition
 encoder/models.SimpleTensorDictWrapper:
-    input_key = "input"
+    input_key = "waveform"
     output_key = "latent"
     model = @blocks.DilatedResidualEncoder
 
 decoder/models.SimpleTensorDictWrapper:
     input_key = "latent"
-    output_key = "output"
+    output_key = "reconstruction"
     model = @blocks.DilatedResidualDecoder
 
 # encoder definition
@@ -81,3 +81,9 @@ decoder/post_conv/nn.Conv1d:
     out_channels = %DATA_SIZE
     kernel_size = 5
     padding = 2
+
+# loss definition
+
+losses.debug_loss:
+    input_key = "waveform"
+    output_key = "reconstruction"
