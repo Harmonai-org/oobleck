@@ -3,6 +3,7 @@ from __gin__ import dynamic_registration
 from oobleck import blocks
 from oobleck import models
 from oobleck import losses
+from oobleck import utils
 
 import torch
 from torch import nn
@@ -55,7 +56,7 @@ encoder/pre_conv/nn.Conv1d:
     padding = 2
 
 encoder/post_conv/nn.Conv1d:
-    out_channels = %LATENT_SIZE
+    out_channels = @utils.encoder_out_size()
     kernel_size = 1
     padding = 0
 
@@ -77,13 +78,16 @@ decoder/pre_conv/nn.Conv1d:
     kernel_size = 1
     padding = 0
 
+utils.encoder_out_size:
+    latent_size = %LATENT_SIZE
+    mode = "ae"
+
 decoder/post_conv/nn.Conv1d:
     out_channels = %DATA_SIZE
     kernel_size = 5
     padding = 2
 
 # loss definition
-
 losses.debug_loss:
     input_key = "waveform"
     output_key = "reconstruction"

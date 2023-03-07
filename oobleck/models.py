@@ -25,6 +25,24 @@ class SimpleTensorDictWrapper(nn.Module):
         return {self.output_key: self.model(inputs[self.input_key])}
 
 
+class VariationalEncoder(nn.Module):
+
+    def __init__(self, input_key: str, model: ModuleFactory) -> None:
+        super().__init__()
+        self.input_key = input_key
+        self.model = model()
+
+    def forward(self, inputs: TensorDict) -> TensorDict:
+        encoder_out: torch.Tensor = self.model(inputs[self.input_key])
+        mean, std = encoder_out.chunk(2, 1)
+
+        std = nn.functional.softplus(std) + 1e-5
+
+        latent = torch.randn_like(mean) * std + mean
+
+        return {"latent": latent, "latent_mean": mean, "latent_std": std}
+
+
 @gin.configurable
 class AudioAutoEncoder(nn.Module):
 

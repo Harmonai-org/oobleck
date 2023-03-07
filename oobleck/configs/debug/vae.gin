@@ -1,0 +1,24 @@
+from __gin__ import dynamic_registration
+
+include "oobleck/configs/debug/base.gin"
+
+from oobleck import utils
+from oobleck import models
+from oobleck import blocks
+from oobleck import losses
+
+models.AudioAutoEncoder:
+    encoder = @models.VariationalEncoder
+    loss_function = @losses.debug_loss_vae
+
+models.VariationalEncoder:
+    input_key = "waveform"
+    model = @blocks.DilatedResidualEncoder
+
+utils.encoder_out_size:
+    mode = "vae"
+
+losses.debug_loss_vae:
+    input_key = "waveform"
+    output_key = "reconstruction"
+    beta_kl = 0.1
