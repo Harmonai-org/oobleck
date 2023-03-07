@@ -1,6 +1,6 @@
 from __gin__ import dynamic_registration
 
-include "oobleck/configs/debug/base.gin"
+include "debug/base.gin"
 
 from oobleck import utils
 from oobleck import models

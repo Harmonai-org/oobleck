@@ -1,1 +1,1 @@
-include "oobleck/configs/debug/base.gin"
+include "debug/base.gin"
