@@ -24,6 +24,12 @@ We will be experimenting with different loss functions
 - perceptual loss, etc
 - place loss functions into [auraloss](https://github.com/csteinmetz1/auraloss) and import it
 
+## Installation
+
+```bash
+OOBLECK_VERSION=develop pip install git+https://github.com/Harmonai-org/oobleck.git
+```
+
 ## Usage
 
 Instantiation of an OOBLECK autoencoder corresponding to a given `.gin` file can be done following 
@@ -34,7 +40,7 @@ import torch
 
 from oobleck import AudioAutoEncoder
 
-gin.parse_config_file("oobleck/configs/debug/base.gin")
+gin.parse_config_file("debug/base.gin")
 model = AudioAutoEncoder()
 
 inputs = {"waveform": torch.randn(1, 1, 2**16)}
