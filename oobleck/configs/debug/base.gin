@@ -1,0 +1,83 @@
+from __gin__ import dynamic_registration
+
+from oobleck import blocks
+from oobleck import models
+from oobleck import losses
+
+import torch
+from torch import nn
+
+# macros definition
+CAPACITY = 32
+RATIOS = [4, 4, 4, 2, 2]
+DILATIONS = [1, 3, 9]
+KERNEL_SIZE = 3
+DATA_SIZE = 1
+LATENT_SIZE = 128
+
+# AudioAutoEncoder definition
+models.AudioAutoEncoder:
+    encoder = @encoder/models.SimpleTensorDictWrapper
+    decoder = @decoder/models.SimpleTensorDictWrapper
+    loss_function = @losses.debug_loss
+
+# encoder / decoder wrapper definition
+encoder/models.SimpleTensorDictWrapper:
+    input_key = "input"
+    output_key = "latent"
+    model = @blocks.DilatedResidualEncoder
+
+decoder/models.SimpleTensorDictWrapper:
+    input_key = "latent"
+    output_key = "output"
+    model = @blocks.DilatedResidualDecoder
+
+# encoder definition
+blocks.DilatedResidualEncoder:
+    capacity = %CAPACITY
+    dilated_unit = @blocks.DilatedConvolutionalUnit
+    downsampling_unit = @blocks.DownsamplingUnit
+    ratios = %RATIOS
+    dilations = %DILATIONS
+    pre_network_conv = @encoder/pre_conv/nn.Conv1d
+    post_network_conv = @encoder/post_conv/nn.Conv1d
+
+blocks.DilatedConvolutionalUnit:
+    kernel_size = %KERNEL_SIZE
+    activation = @nn.SiLU
+
+blocks.DownsamplingUnit:
+    activation = @nn.SiLU
+
+encoder/pre_conv/nn.Conv1d:
+    in_channels = %DATA_SIZE
+    kernel_size = 5
+    padding = 2
+
+encoder/post_conv/nn.Conv1d:
+    out_channels = %LATENT_SIZE
+    kernel_size = 1
+    padding = 0
+
+# decoder definition
+blocks.DilatedResidualDecoder:
+    capacity = %CAPACITY
+    dilated_unit = @blocks.DilatedConvolutionalUnit
+    upsampling_unit = @blocks.UpsamplingUnit
+    ratios = %RATIOS
+    dilations = %DILATIONS
+    pre_network_conv = @decoder/pre_conv/nn.Conv1d
+    post_network_conv = @decoder/post_conv/nn.Conv1d
+
+blocks.UpsamplingUnit:
+    activation = @nn.SiLU
+
+decoder/pre_conv/nn.Conv1d:
+    in_channels = %LATENT_SIZE
+    kernel_size = 1
+    padding = 0
+
+decoder/post_conv/nn.Conv1d:
+    out_channels = %DATA_SIZE
+    kernel_size = 5
+    padding = 2

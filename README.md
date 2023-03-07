@@ -24,8 +24,30 @@ We will be experimenting with different loss functions
 - perceptual loss, etc
 - place loss functions into [auraloss](https://github.com/csteinmetz1/auraloss) and import it
 
+## Usage
 
+Instantiation of an OOBLECK autoencoder corresponding to a given `.gin` file can be done following 
 
+```python
+import gin
+import torch
 
+from oobleck import AudioAutoEncoder
 
+gin.parse_config_file("oobleck/configs/debug/base.gin")
+model = AudioAutoEncoder()
 
+inputs = {"input": torch.randn(1, 1, 2**16)}
+loss, outputs = model.loss(inputs)
+
+for k, v in outputs.items():
+    print(f"{k}.shape = {v.shape}")
+
+# >>> input.shape = torch.Size([1, 1, 65536])
+# >>> latent.shape = torch.Size([1, 128, 256])
+# >>> output.shape = torch.Size([1, 1, 65536])
+
+print(loss)
+
+# >>> tensor(0.8029, grad_fn=<MeanBackward0>)
+```

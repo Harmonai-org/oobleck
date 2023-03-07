@@ -101,7 +101,7 @@ def test_dilated_residual_waveform_encoder(
     def post_conv(in_channels):
         return nn.Conv1d(in_channels, latent_size, 1)
 
-    model = blocks.DilatedResidualWaveformEncoder(
+    model = blocks.DilatedResidualEncoder(
         capacity=capacity,
         dilated_unit=dilated_unit,
         downsampling_unit=downsampling_unit,
@@ -148,7 +148,7 @@ def test_dilated_residual_waveform_decoder(
     def post_conv(in_channels):
         return nn.Conv1d(in_channels, data_size, 1)
 
-    model = blocks.DilatedResidualWaveformDecoder(
+    model = blocks.DilatedResidualDecoder(
         capacity=capacity,
         dilated_unit=dilated_unit,
         upsampling_unit=upsampling_unit,

@@ -101,7 +101,7 @@ class DownsamplingUnit(FeedForwardModule):
                 )))
 
 
-class DilatedResidualWaveformEncoder(FeedForwardModule):
+class DilatedResidualEncoder(FeedForwardModule):
 
     def __init__(
             self,
@@ -140,7 +140,7 @@ class DilatedResidualWaveformEncoder(FeedForwardModule):
         return dilations
 
 
-class DilatedResidualWaveformDecoder(FeedForwardModule):
+class DilatedResidualDecoder(FeedForwardModule):
 
     def __init__(
             self,
