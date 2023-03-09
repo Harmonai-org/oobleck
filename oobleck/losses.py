@@ -7,7 +7,8 @@ TensorDict = Dict[str, torch.Tensor]
 
 def debug_loss(inputs: TensorDict, input_key: str,
                output_key: str) -> torch.Tensor:
-    return (inputs[input_key] - inputs[output_key]).abs().mean()
+    l1 = (inputs[input_key] - inputs[output_key]).abs().mean()
+    return {"generator_loss": l1}
 
 
 def debug_loss_vae(inputs: TensorDict,
@@ -21,4 +22,4 @@ def debug_loss_vae(inputs: TensorDict,
     logvar = torch.log(var)
 
     kl = (mean.pow(2) + var - logvar - 1).sum(1).mean() * beta_kl
-    return l1 + kl
+    return {"generator_loss": l1 + kl, "kl_divergence": kl}
