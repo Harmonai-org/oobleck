@@ -22,4 +22,4 @@ def debug_loss_vae(inputs: TensorDict,
     logvar = torch.log(var)
 
     kl = (mean.pow(2) + var - logvar - 1).sum(1).mean() * beta_kl
-    return {"generator_loss": l1 + kl}
+    return {"generator_loss": l1 + kl, "kl_divergence": kl}
