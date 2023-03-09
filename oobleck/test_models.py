@@ -23,4 +23,6 @@ def test_models(config):
 
     model = AudioAutoEncoder()
 
-    model.loss(input_data)
+    losses, model_outputs = model.loss(input_data)
+
+    assert "generator_loss" in losses
