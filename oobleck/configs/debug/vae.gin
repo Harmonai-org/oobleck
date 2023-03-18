@@ -9,7 +9,7 @@ from oobleck import losses
 
 models.AudioAutoEncoder:
     encoder = @models.VariationalEncoder
-    loss_function = @losses.debug_loss_vae
+    loss_module = @losses.DebugLossVae
 
 models.VariationalEncoder:
     input_key = "waveform"
@@ -18,7 +18,7 @@ models.VariationalEncoder:
 utils.encoder_out_size:
     mode = "vae"
 
-losses.debug_loss_vae:
+losses.DebugLossVae:
     input_key = "waveform"
     output_key = "reconstruction"
     beta_kl = 0.1

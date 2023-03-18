@@ -50,7 +50,7 @@ class AudioAutoEncoder(nn.Module):
         self,
         encoder: ModuleFactory,
         decoder: ModuleFactory,
-        loss_function: Callable[[TensorDict], torch.Tensor],
+        loss_module: Callable[[], nn.Module],
         discriminator: Optional[ModuleFactory] = None,
     ) -> None:
         super().__init__()
@@ -62,7 +62,7 @@ class AudioAutoEncoder(nn.Module):
         else:
             self.discriminator = None
 
-        self.loss_function = loss_function
+        self.loss_module = loss_module()
 
     def forward(self, inputs: TensorDict) -> TensorDict:
         encoder_out = self.encoder(inputs)
@@ -79,4 +79,4 @@ class AudioAutoEncoder(nn.Module):
 
     def loss(self, inputs: TensorDict) -> Tuple[torch.Tensor, TensorDict]:
         outputs = self.forward(inputs)
-        return self.loss_function(outputs), outputs
+        return self.loss_module(outputs), outputs
