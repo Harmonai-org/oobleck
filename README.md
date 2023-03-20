@@ -15,7 +15,7 @@ We will be creating at least
 
 We will validate them using
 - MUSHRA testing protocol with expert listeners for a subjective performance measure
-- visqol and si-snr expert listeners for a subjective performance measure
+- visqol and si-snr expert listeners for an objective performance measure
 - FAD?
 - ...
 - (waiting for the first models to be trained)
