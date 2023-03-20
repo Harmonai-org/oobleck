@@ -55,5 +55,5 @@ for k, v in outputs.items():
 
 print(loss)
 
-# >>> tensor(0.8029, grad_fn=<MeanBackward0>)
+# >>> {'generator_loss': tensor(0.7940, grad_fn=<MeanBackward0>)}
 ```
