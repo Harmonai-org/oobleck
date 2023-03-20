@@ -8,14 +8,14 @@ def test_debug():
     waveform = torch.randn(1, 1, 2**14)
 
     inputs = {"waveform": waveform, "reconstruction": waveform}
-    loss = losses.debug_loss(inputs, "waveform", "reconstruction")
+    loss = losses.DebugLoss("waveform", "reconstruction")(inputs)
     assert loss["generator_loss"].item() == 0.
 
     inputs = {
         "waveform": waveform,
         "reconstruction": torch.randn_like(waveform)
     }
-    loss = losses.debug_loss(inputs, "waveform", "reconstruction")
+    loss = losses.DebugLoss("waveform", "reconstruction")(inputs)
     assert loss["generator_loss"].item() > 0.
 
 
@@ -31,7 +31,7 @@ def test_debug_vae():
         "latent_std": torch.ones_like(latent_std),
     }
 
-    loss = losses.debug_loss_vae(inputs, "waveform", "reconstruction")
+    loss = losses.DebugLossVae("waveform", "reconstruction")(inputs)
     assert loss["generator_loss"].item() == 0.
 
     inputs = {
@@ -41,5 +41,5 @@ def test_debug_vae():
         "latent_std": latent_std,
     }
 
-    loss = losses.debug_loss_vae(inputs, "waveform", "reconstruction")
+    loss = losses.DebugLossVae("waveform", "reconstruction")(inputs)
     assert loss["generator_loss"].item() > 0.

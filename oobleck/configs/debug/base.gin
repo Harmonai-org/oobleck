@@ -20,7 +20,7 @@ LATENT_SIZE = 128
 models.AudioAutoEncoder:
     encoder = @encoder/models.SimpleTensorDictWrapper
     decoder = @decoder/models.SimpleTensorDictWrapper
-    loss_function = @losses.debug_loss
+    loss_module = @losses.DebugLoss
 
 # encoder / decoder wrapper definition
 encoder/models.SimpleTensorDictWrapper:
@@ -88,6 +88,6 @@ decoder/post_conv/nn.Conv1d:
     padding = 2
 
 # loss definition
-losses.debug_loss:
+losses.DebugLoss:
     input_key = "waveform"
     output_key = "reconstruction"
