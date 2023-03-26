@@ -1,5 +1,6 @@
 from typing import Dict
 
+import auraloss
 import torch
 import torch.nn as nn
 
@@ -38,3 +39,44 @@ class DebugLossVae(nn.Module):
 
         kl = (mean.pow(2) + var - logvar - 1).sum(1).mean() * self.beta_kl
         return {"generator_loss": l1 + kl, "kl_divergence": kl}
+
+
+class DebugLossSumAndDifferenceSTFT(nn.Module):
+
+    def __init__(self, 
+                 input_key: str, 
+                 output_key: str,
+                 **stft_args
+                 ) -> None:
+        
+        super().__init__()
+        self.input_key = input_key
+        self.output_key = output_key
+
+        self.loss = auraloss.freq.SumAndDifferenceSTFTLoss(
+            **stft_args
+        )
+
+    def forward(self, inputs: TensorDict) -> torch.Tensor:
+        stft_loss = self.loss(inputs[self.input_key], inputs[self.output_key])
+        return {"generator_loss": stft_loss}
+
+class DebugLossMultiResolutionSTFT(nn.Module):
+
+    def __init__(self, 
+                 input_key: str, 
+                 output_key: str,
+                 **stft_args
+                 ) -> None:
+        
+        super().__init__()
+        self.input_key = input_key
+        self.output_key = output_key
+
+        self.loss = auraloss.freq.MultiResolutionSTFTLoss(
+            **stft_args
+        )
+
+    def forward(self, inputs: TensorDict) -> torch.Tensor:
+        stft_loss = self.loss(inputs[self.input_key], inputs[self.output_key])
+        return {"generator_loss": stft_loss}

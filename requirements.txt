@@ -2,3 +2,4 @@ numpy>=1.23.5
 pytest>=7.2.2
 torch>=1.13.1
 gin-config>=0.5.0
+auraloss>=0.3.0
