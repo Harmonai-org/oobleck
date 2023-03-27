@@ -41,41 +41,19 @@ class DebugLossVae(nn.Module):
         return {"generator_loss": l1 + kl, "kl_divergence": kl}
 
 
-class DebugLossSumAndDifferenceSTFT(nn.Module):
+class AuralossWrapper(nn.Module):
 
     def __init__(self, 
                  input_key: str, 
                  output_key: str,
-                 **stft_args
+                 auraloss_module: nn.Module,
                  ) -> None:
         
         super().__init__()
         self.input_key = input_key
         self.output_key = output_key
 
-        self.loss = auraloss.freq.SumAndDifferenceSTFTLoss(
-            **stft_args
-        )
-
-    def forward(self, inputs: TensorDict) -> torch.Tensor:
-        stft_loss = self.loss(inputs[self.input_key], inputs[self.output_key])
-        return {"generator_loss": stft_loss}
-
-class DebugLossMultiResolutionSTFT(nn.Module):
-
-    def __init__(self, 
-                 input_key: str, 
-                 output_key: str,
-                 **stft_args
-                 ) -> None:
-        
-        super().__init__()
-        self.input_key = input_key
-        self.output_key = output_key
-
-        self.loss = auraloss.freq.MultiResolutionSTFTLoss(
-            **stft_args
-        )
+        self.loss = auraloss_module
 
     def forward(self, inputs: TensorDict) -> torch.Tensor:
         stft_loss = self.loss(inputs[self.input_key], inputs[self.output_key])
