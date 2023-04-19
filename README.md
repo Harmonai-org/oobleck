@@ -1,5 +1,7 @@
 # Oobleck 
-It's a working title. Possible backcronyms:
+"The more you compress it, the harder it gets"
+
+Possible backronyms:
 - "Out-of-the-box Latent Encoder Construction Kit"
 - "Over-optimized Latent Encoder Construction Kit"
 
