@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Callable, Dict
 
 import torch
 import torch.nn as nn
@@ -38,3 +38,23 @@ class DebugLossVae(nn.Module):
 
         kl = (mean.pow(2) + var - logvar - 1).sum(1).mean() * self.beta_kl
         return {"generator_loss": l1 + kl, "kl_divergence": kl}
+
+
+class AuralossWrapper(nn.Module):
+
+    def __init__(
+        self,
+        input_key: str,
+        output_key: str,
+        auraloss_module: Callable[[], nn.Module],
+    ) -> None:
+
+        super().__init__()
+        self.input_key = input_key
+        self.output_key = output_key
+
+        self.loss = auraloss_module()
+
+    def forward(self, inputs: TensorDict) -> torch.Tensor:
+        stft_loss = self.loss(inputs[self.input_key], inputs[self.output_key])
+        return {"generator_loss": stft_loss}

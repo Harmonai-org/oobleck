@@ -1,3 +1,4 @@
+import auraloss
 import pytest
 import torch
 
@@ -43,3 +44,41 @@ def test_debug_vae():
 
     loss = losses.DebugLossVae("waveform", "reconstruction")(inputs)
     assert loss["generator_loss"].item() > 0.
+
+
+auraloss_modules = [
+    auraloss.freq.SumAndDifferenceSTFTLoss(
+        fft_sizes=[512, 256, 128],
+        hop_sizes=[128, 64, 32],
+        win_lengths=[512, 256, 128],
+    ),
+    auraloss.freq.SpectralConvergenceLoss(),
+    auraloss.freq.RandomResolutionSTFTLoss(),
+]
+
+
+@pytest.mark.parametrize(
+    "loss_module",
+    auraloss_modules,
+    ids=map(lambda x: x.__class__.__name__, auraloss_modules),
+)
+def test_auraloss_wrapper(loss_module):
+    waveform = torch.randn(1, 2, 2**16)
+
+    inputs = {
+        "waveform": waveform,
+        "reconstruction": waveform,
+    }
+
+    wrapper = losses.AuralossWrapper("waveform", "reconstruction",
+                                     lambda: loss_module)
+    loss = wrapper(inputs)
+    assert loss["generator_loss"].item() == 0.
+
+    inputs = {
+        "waveform": waveform,
+        "reconstruction": torch.randn_like(waveform),
+    }
+
+    loss = wrapper(inputs)
+    assert loss["generator_loss"].item() != 0.
