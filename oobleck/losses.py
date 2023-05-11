@@ -3,6 +3,8 @@ from typing import Callable, Dict
 import torch
 import torch.nn as nn
 
+from .blocks import ModuleFactory
+
 TensorDict = Dict[str, torch.Tensor]
 
 
@@ -46,7 +48,7 @@ class AuralossWrapper(nn.Module):
         self,
         input_key: str,
         output_key: str,
-        auraloss_module: Callable[[], nn.Module],
+        auraloss_module: ModuleFactory,
     ) -> None:
 
         super().__init__()

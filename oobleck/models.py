@@ -50,7 +50,7 @@ class AudioAutoEncoder(nn.Module):
         self,
         encoder: ModuleFactory,
         decoder: ModuleFactory,
-        loss_module: Callable[[], nn.Module],
+        loss_module: ModuleFactory,
         discriminator: Optional[ModuleFactory] = None,
     ) -> None:
         super().__init__()
