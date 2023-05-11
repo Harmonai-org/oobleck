@@ -123,7 +123,7 @@ class SharedDiscriminatorConvNet(nn.Module):
 
         net.append(convolution(channels[-1], out_size, 1))
 
-        self.net = nn.Sequential(*net)
+        self.net = nn.ModuleList(net)
 
     def forward(self, x):
         features = []
@@ -131,7 +131,7 @@ class SharedDiscriminatorConvNet(nn.Module):
             x = layer(x)
             if isinstance(layer, nn.modules.conv._ConvNd):
                 features.append(x)
-        score = features.reshape(features.shape[0], -1).mean(-1)
+        score = x.reshape(x.shape[0], -1).mean(-1)
         return score, features
 
 
@@ -186,25 +186,31 @@ class MultiPeriodDiscriminator(nn.Module):
         return x.reshape(*x.shape[:2], -1, n)
 
 
-class MultiScaleSpectralDiscriminator1d(nn.Module):
+class MultiScaleSpectralDiscriminator(nn.Module):
 
     def __init__(
         self,
         scales: Sequence[int],
         convnet: Callable[[int], SharedDiscriminatorConvNet],
         spectrogram: Callable[[int], torchaudio.transforms.Spectrogram],
+        use_2d_conv: bool,
     ) -> None:
         super().__init__()
         self.specs = nn.ModuleList([spectrogram(n) for n in scales])
-        self.nets = nn.ModuleList([convnet(n + 2) for n in scales])
+        self.nets = nn.ModuleList(
+            [convnet(1 if use_2d_conv else n + 2) for n in scales])
+        self.use_2d_conv = use_2d_conv
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> IndividualDiscriminatorOut:
         score = 0
         features = []
         for spec, net in zip(self.specs, self.nets):
-            spec_x = spec(x).squeeze(1)
-            spec_x = torch.cat([spec_x.real, spec_x.imag], 1)
+            spec_x = spec(x)
+            spec_x = torch.cat([spec_x.real, spec_x.imag], 2)
+
+            if not self.use_2d_conv:
+                spec_x = spec_x.squeeze(1)
             s, f = net(spec_x)
             score = score + s
             features.extend(f)
-        return features
+        return score, features
