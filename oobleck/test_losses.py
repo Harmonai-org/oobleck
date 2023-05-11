@@ -1,7 +1,7 @@
+import auraloss
 import pytest
 import torch
 
-import auraloss
 from oobleck import losses
 
 
@@ -45,31 +45,40 @@ def test_debug_vae():
     loss = losses.DebugLossVae("waveform", "reconstruction")(inputs)
     assert loss["generator_loss"].item() > 0.
 
-def test_auraloss_wrapper():
-    waveform = torch.randn(1, 2, 2**14)
 
-    scales = [2048, 1024, 512, 256, 128]
-    hop_sizes = []
-    win_lengths = []
-    overlap = 0.75
-    for s in scales:
-        hop_sizes.append(int(s * (1 - overlap)))
-        win_lengths.append(s)
+auraloss_modules = [
+    auraloss.freq.SumAndDifferenceSTFTLoss(
+        fft_sizes=[512, 256, 128],
+        hop_sizes=[128, 64, 32],
+        win_lengths=[512, 256, 128],
+    ),
+    auraloss.freq.SpectralConvergenceLoss(),
+    auraloss.freq.RandomResolutionSTFTLoss(),
+]
 
-    auraloss_stft_loss = auraloss.freq.SumAndDifferenceSTFTLoss(
-        fft_sizes=scales,
-        hop_sizes=hop_sizes,
-        win_lengths=win_lengths
-    )
 
-    inputs = {"waveform": waveform, "reconstruction": waveform}
-    loss = losses.AuralossWrapper("waveform", "reconstruction", auraloss_stft_loss)(inputs)
+@pytest.mark.parametrize(
+    "loss_module",
+    auraloss_modules,
+    ids=map(lambda x: x.__class__.__name__, auraloss_modules),
+)
+def test_auraloss_wrapper(loss_module):
+    waveform = torch.randn(1, 2, 2**16)
+
+    inputs = {
+        "waveform": waveform,
+        "reconstruction": waveform,
+    }
+
+    wrapper = losses.AuralossWrapper("waveform", "reconstruction",
+                                     lambda: loss_module)
+    loss = wrapper(inputs)
     assert loss["generator_loss"].item() == 0.
 
     inputs = {
         "waveform": waveform,
-        "reconstruction": torch.randn_like(waveform)
+        "reconstruction": torch.randn_like(waveform),
     }
 
-    loss = losses.AuralossWrapper("waveform", "reconstruction", auraloss_stft_loss)(inputs)
-    assert loss["generator_loss"].item() > 0.
+    loss = wrapper(inputs)
+    assert loss["generator_loss"].item() != 0.
