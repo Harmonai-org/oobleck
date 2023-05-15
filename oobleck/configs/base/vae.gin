@@ -1,6 +1,6 @@
 from __gin__ import dynamic_registration
 
-include "debug/base.gin"
+include "base/base.gin"
 
 from oobleck import utils
 from oobleck import models
@@ -9,7 +9,6 @@ from oobleck import losses
 
 models.AudioAutoEncoder:
     encoder = @models.VariationalEncoder
-    loss_module = @losses.DebugLossVae
 
 models.VariationalEncoder:
     input_key = "waveform"
@@ -18,7 +17,12 @@ models.VariationalEncoder:
 utils.encoder_out_size:
     mode = "vae"
 
-losses.DebugLossVae:
-    input_key = "waveform"
-    output_key = "reconstruction"
-    beta_kl = 0.1
+losses.CombineLosses:
+    loss_modules = [
+        @multiscale_stft/losses.AuralossWrapper,
+        @losses.HingeGan,
+        @losses.KLDivergenceVAE
+    ]
+
+losses.KLDivergenceVAE:
+    weight = .1

@@ -29,14 +29,14 @@ def test_multi_discriminator():
 
     inputs = {"real": torch.ones(4, 1, 2), "fake": -torch.ones(4, 1, 2)}
 
-    score, features = md(inputs)
+    inputs = md(inputs)
 
-    assert score["real"].mean().item() == 2.
-    assert score["fake"].mean().item() == -2.
+    assert inputs["score_real"].mean().item() == 2.
+    assert inputs["score_fake"].mean().item() == -2.
 
-    for i, feature in enumerate(features["features_real"]):
+    for i, feature in enumerate(inputs["features_real"]):
         assert feature.mean() == i % num_features
-    for i, feature in enumerate(features["features_fake"]):
+    for i, feature in enumerate(inputs["features_fake"]):
         assert feature.mean() == -(i % num_features)
 
 
@@ -144,7 +144,7 @@ def test_multi_discriminator_scale_period():
         ["real", "fake"],
     )
 
-    scores, features = discriminator({
+    inputs = discriminator({
         "real": torch.randn(1, 1, 2**16),
         "fake": torch.randn(1, 1, 2**16),
     })

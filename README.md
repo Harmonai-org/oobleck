@@ -42,20 +42,16 @@ import torch
 
 from oobleck import AudioAutoEncoder
 
-gin.parse_config_file("debug/base.gin")
+gin.parse_config_file("base/base.gin")
 model = AudioAutoEncoder()
 
 inputs = {"waveform": torch.randn(1, 1, 2**16)}
-loss, outputs = model.loss(inputs)
+outputs = model.loss(inputs)
 
-for k, v in outputs.items():
-    print(f"{k}.shape = {v.shape}")
+print(outputs.keys())
 
-# >>> waveform.shape = torch.Size([1, 1, 65536])
-# >>> latent.shape = torch.Size([1, 128, 256])
-# >>> reconstruction.shape = torch.Size([1, 1, 65536])
-
-print(loss)
-
-# >>> {'generator_loss': tensor(0.7940, grad_fn=<MeanBackward0>)}
+# >>> dict_keys(['waveform', 'latent', 'reconstruction', \
+# >>> 'score_waveform', 'score_reconstruction', 'features_reconstruction', \
+# >>> 'features_waveform', 'generator_loss', 'MultiResolutionSTFTLoss', \
+# >>> 'discriminator_loss'])
 ```
