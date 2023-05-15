@@ -65,18 +65,15 @@ class AudioAutoEncoder(nn.Module):
         self.loss_module = loss_module()
 
     def forward(self, inputs: TensorDict) -> TensorDict:
-        encoder_out = self.encoder(inputs)
-        inputs.update(encoder_out)
-
-        decoder_out = self.decoder(inputs)
-        inputs.update(decoder_out)
+        inputs.update(self.encoder(inputs))
+        inputs.update(self.decoder(inputs))
 
         if self.discriminator is not None:
-            discriminator_out = self.discriminator(inputs)
-            inputs.update(discriminator_out)
+            inputs.update(self.discriminator(inputs))
 
         return inputs
 
-    def loss(self, inputs: TensorDict) -> Tuple[torch.Tensor, TensorDict]:
-        outputs = self.forward(inputs)
-        return self.loss_module(outputs)
+    def loss(self, inputs: TensorDict) -> TensorDict:
+        inputs = self.forward(inputs)
+        inputs.update(self.loss_module(inputs))
+        return inputs
