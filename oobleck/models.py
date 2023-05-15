@@ -79,4 +79,4 @@ class AudioAutoEncoder(nn.Module):
 
     def loss(self, inputs: TensorDict) -> Tuple[torch.Tensor, TensorDict]:
         outputs = self.forward(inputs)
-        return self.loss_module(outputs), outputs
+        return self.loss_module(outputs)

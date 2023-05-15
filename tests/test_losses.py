@@ -16,8 +16,8 @@ def test_debug():
         "waveform": waveform,
         "reconstruction": torch.randn_like(waveform)
     }
-    loss = losses.DebugLoss("waveform", "reconstruction")(inputs)
-    assert loss["generator_loss"].item() > 0.
+    inputs = losses.DebugLoss("waveform", "reconstruction")(inputs)
+    assert inputs["generator_loss"].item() > 0.
 
 
 def test_debug_vae():
@@ -32,8 +32,8 @@ def test_debug_vae():
         "latent_std": torch.ones_like(latent_std),
     }
 
-    loss = losses.DebugLossVae("waveform", "reconstruction")(inputs)
-    assert loss["generator_loss"].item() == 0.
+    inputs = losses.DebugLossVae("waveform", "reconstruction")(inputs)
+    assert inputs["generator_loss"].item() == 0.
 
     inputs = {
         "waveform": waveform,
@@ -42,8 +42,8 @@ def test_debug_vae():
         "latent_std": latent_std,
     }
 
-    loss = losses.DebugLossVae("waveform", "reconstruction")(inputs)
-    assert loss["generator_loss"].item() > 0.
+    inputs = losses.DebugLossVae("waveform", "reconstruction")(inputs)
+    assert inputs["generator_loss"].item() > 0.
 
 
 auraloss_modules = [
@@ -72,13 +72,13 @@ def test_auraloss_wrapper(loss_module):
 
     wrapper = losses.AuralossWrapper("waveform", "reconstruction",
                                      lambda: loss_module)
-    loss = wrapper(inputs)
-    assert loss["generator_loss"].item() == 0.
+    inputs = wrapper(inputs)
+    assert inputs["generator_loss"].item() == 0.
 
     inputs = {
         "waveform": waveform,
         "reconstruction": torch.randn_like(waveform),
     }
 
-    loss = wrapper(inputs)
-    assert loss["generator_loss"].item() != 0.
+    inputs = wrapper(inputs)
+    assert inputs["generator_loss"].item() != 0.

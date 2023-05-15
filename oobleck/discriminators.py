@@ -68,7 +68,9 @@ class MultiDiscriminator(nn.Module):
 
         for discriminator in self.discriminators:
             score, features = discriminator(discriminator_input)
-            all_scores.append(self.unpack_tensor_to_dict(score))
+            scores = self.unpack_tensor_to_dict(score)
+            scores = {f"score_{k}": scores[k] for k in scores.keys()}
+            all_scores.append(scores)
 
             features = map(self.unpack_tensor_to_dict, features)
             features = functools.reduce(self.concat_dicts, features)
@@ -77,7 +79,11 @@ class MultiDiscriminator(nn.Module):
 
         all_scores = functools.reduce(self.sum_dicts, all_scores)
         all_features = functools.reduce(self.concat_dicts, all_features)
-        return all_scores, all_features
+
+        inputs.update(all_scores)
+        inputs.update(all_features)
+
+        return inputs
 
 
 class SharedDiscriminatorConvNet(nn.Module):
@@ -125,7 +131,7 @@ class SharedDiscriminatorConvNet(nn.Module):
 
         self.net = nn.ModuleList(net)
 
-    def forward(self, x):
+    def forward(self, x) -> IndividualDiscriminatorOut:
         features = []
         for layer in self.net:
             x = layer(x)
