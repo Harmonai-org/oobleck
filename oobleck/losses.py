@@ -170,3 +170,26 @@ class CombineLosses(nn.Module):
         for loss in self.loss_modules:
             inputs = loss(inputs)
         return inputs
+
+
+
+# VICReg, https://arxiv.org/abs/2105.04906
+# Typically there will already be some loss in use to enforce some similarity and draw points together.
+# These two losses offer a sort of "repulsion" regularization, across the batch dimension, to keep the
+# space from collapse.  Intended to be connected to the latents in the middle of the autoencoder..
+
+def vicreg_var_loss(z, gamma=1, eps=1e-4):
+    std_z = torch.sqrt(z.var(dim=0) + eps)
+    return torch.mean(F.relu(gamma - std_z))   # the relu gets us the max(0, ...)
+
+def off_diagonal(x):
+    "gets off-diagnonal elements of a matrix; used by vicreg_cov_loss "
+    n, m = x.shape
+    assert n == m
+    return x.flatten()[:-1].view(n - 1, n + 1)[:, 1:].flatten()
+
+def vicreg_cov_loss(z):
+    "the regularization term that is the sum of the off-diagaonal terms of the covariance matrix"
+    num_features = z.shape[1]*z.shape[2]  # TODO: move this out for speed.
+    cov_z = torch.cov(rearrange(z, 'b c t -> ( c t ) b'))   
+    return off_diagonal(cov_z).pow_(2).sum().div(num_features)
