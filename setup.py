@@ -2,8 +2,6 @@ import os
 
 import setuptools
 
-version = os.environ["OOBLECK_VERSION"]
-
 with open("README.md", "r") as readme:
     readme = readme.read()
 
@@ -12,7 +10,7 @@ with open("requirements.txt", "r") as requirements:
 
 setuptools.setup(
     name="oobleck",
-    version=version,
+    version="0.0.1",
     author="Harmonai-org",
     author_email="",
     description="OOBLECK: Out-of-the-box latent construction toolkit",
@@ -28,6 +26,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=requirements.split("\n"),
-    python_requires='>=3.9',
+    python_requires='>=3.8',
     include_package_data=True,
 )
