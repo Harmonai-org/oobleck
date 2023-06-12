@@ -1,7 +1,6 @@
 import functools
 from typing import Callable, Dict, Sequence, Tuple, Union
 
-import cached_conv as cc
 import numpy as np
 import torch
 import torch.nn as nn
